@@ -1,2 +1,7 @@
 .gradle
 build/
+.idea
+*.iml
+out
+build
+com.msopentech.thali.name.keystore
