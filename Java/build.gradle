@@ -34,8 +34,8 @@ applicationDistribution.from(webFiles) {
     exclude "node_modules"
 }
 
-installApp.dependsOn ':web:copyTemp'
-distZip.dependsOn ':web:copyTemp'
+installApp.dependsOn ':web:build'
+distZip.dependsOn ':web:build'
 
 // These tasks are needed to properly position the web directory when debugging, see README.md for details
 task deleteWeb(type:Delete, dependsOn: ':web:copyTemp') {
