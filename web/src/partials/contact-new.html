@@ -8,22 +8,24 @@
     <div class="topcoat-navigation-bar__item center half">
         <h1 class="topcoat-navigation-bar__title">New Contact</h1>
     </div>
+    <div class="topcoat-navigation-bar__item right quarter">
+        <button class="topcoat-icon-button--large--quiet" ng-click="save(contactId, contactName, videoStream)">
+            <span class="topcoat-icon icomatic">save</span>
+        </button>
+    </div>
 </div>
 
 <form>
-  <fieldset>
+  <fieldset style="padding-left: 0px;padding-right: 0px;padding-bottom: 0px;border-bottom-width: 0px;border-left-width: 0px;border-right-width: 0px;margin-left: 0px;margin-right: 0px;border-top-width: 0px">
         <article class="component center">
             <section style="margin-bottom: 5px">
-                <qr-scanner style="width:100%" width="320" ng-success="onSuccess(data)" ng-error="onError(error)" style="float:left"></qr-scanner>
+                <qr-scanner ng-success="onSuccess(data)" ng-error="onError(error)"></qr-scanner>
             </section>
             <section style="margin-bottom: 5px">
-                <input class="topcoat-text-input--large" type='text' ng-model="contactId" placeholder="Unique ID from QR Code" style="width:100%"/>
-            </section>
-            <section style="margin-bottom: 10px">
-                <input class="topcoat-text-input--large" type='text' ng-model="contactName" style="width:100%" placeholder="Please enter a contact name."/>
+                <input class="topcoat-text-input--large" type='text' ng-model="contactId" placeholder="Unique ID from QR Code" style="width:80%"/>
             </section>
             <section>
-                <button type='submit' class="topcoat-icon-button--large" ng-click="save(contactId, contactName, videoStream)" style="float:right">Save</button>
+                <input class="topcoat-text-input--large" type='text' ng-model="contactName" placeholder="Please enter a contact name." style="width:80%"/>
             </section>
         </article>
   </fieldset>

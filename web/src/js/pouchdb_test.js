@@ -247,6 +247,7 @@ function testReplicationFrom(finishedCallback)
     doTest("replication-from", replicationFromTest, testConfigs, finishedCallback);
 }
 
+
 $(function() {
     testReplicationTo(function() {
         testReplicationFrom(printResult);

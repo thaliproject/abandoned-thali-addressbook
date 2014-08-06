@@ -13,6 +13,7 @@
         "topcoat" : "latest",
         "topcoat-icons" : "https://github.com/topcoat/icons.git",
         "jsqrcode" : "https://github.com/LazarSoft/jsqrcode.git",
+        "JavaScript-MD5" : "latest",
         "underscore" : "latest"
     }
 }

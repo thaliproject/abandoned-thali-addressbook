@@ -28,7 +28,7 @@ angular.module('addressBook', [
 			controller: 'ContactListCtrl'
 		})
 		.when('/showme', {
-			templateUrl: 'partials/showme.html',
+			templateUrl: 'partials/contact-detail.html',
 			controller: 'ShowMeCtrl'
 		})
 		// .when('/rawdb', {

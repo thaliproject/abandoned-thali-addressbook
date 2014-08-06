@@ -24,6 +24,7 @@ dependencies {
     compile 'org.ektorp:org.ektorp.android:1.4.2'
     compile files("src/${ant.lib}/crosswalk-${ant.properties['crosswalk-version']}/libs/xwalk_app_runtime_java.jar")
     compile files("src/${ant.lib}/android-4.0.1.2.jar")
+    compile 'org.slf4j:slf4j-android:1.7.7'
 }
 
 task cleanXwalkLib(type: Delete) {
@@ -44,7 +45,7 @@ tasks.compileJava.dependsOn('download-deps');
 tasks.compileJava.dependsOn('download-crosswalk');
 
 task packageApk(type:Exec, dependsOn: ['dist', 'copyDepToLib', ':web:build']) {
-    String manifest = project(':web').projectDir.toString() + "/build/www/manifest.json"
+    String manifest = project(':web').projectDir.toString() + "/build/manifest.json"
     String extensions = project(':Android').projectDir.toString() + '/build/thaliclient-extension/'
     String working = project(':Android').projectDir.toString() + "/src/${ant.lib}/crosswalk-${ant.properties['crosswalk-version']}/"
 

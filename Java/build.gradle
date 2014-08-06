@@ -25,9 +25,8 @@ dependencies {
 }
 
 mainClassName = "com.msopentech.ThaliClient.ProxyDesktop"
-applicationName = "ThaliClientJava"
 
-def webFiles = project(':web').projectDir.toString()+"/build/www"
+def webFiles = project(':web').projectDir.toString()+"/build"
 
 applicationDistribution.from(webFiles) {
     into "web"
@@ -38,11 +37,11 @@ installApp.dependsOn ':web:build'
 distZip.dependsOn ':web:build'
 
 // These tasks are needed to properly position the web directory when debugging, see README.md for details
-task deleteWeb(type:Delete, dependsOn: ':web:copyTemp') {
+task deleteWeb(type:Delete, dependsOn: ':web:build') {
     delete "build/web"
 }
 
 task copyWebForDebug(type: Copy, dependsOn: deleteWeb) {
-    from "../web/build/www"
+    from "../web/build"
     into "build/web"
 }

@@ -19,7 +19,6 @@ angular.module('addressBook.controllers', [])
             console.log("Failed: " + reason);
         });
         $scope.delete = function(contactToDelete) {
-            console.log("Got delete: " + contactToDelete);
             contact.delete(contactToDelete).then(function() {
                 $scope.contacts.remove($scope.contacts.indexOf(contactToDelete));
             }, function(reason) {
@@ -29,7 +28,8 @@ angular.module('addressBook.controllers', [])
     }])
     .controller('ContactDetailCtrl', ['$scope', '$routeParams', 'Contact', function ($scope, $routeParams, contact) {
         contact.retrieve($routeParams.contactId).then(function(contact) {
-            $scope.contact = contact;
+            $scope.name = contact.name;
+            $scope.data = contact.uniqueId;
         }, function(reason) {
             console.log("Failed: " + reason);
         });
@@ -38,8 +38,8 @@ angular.module('addressBook.controllers', [])
         console.log("In showme!");
         $http.get($localKeyURL)
          .success(function(data, status, headers, config) {
-            console.log("Got local HTTPKey: " + data);
             $scope.data = data['localMachineIPHttpKeyURL'];
+            $scope.name = "Me";
          })
          .error(function(data, status, headers, config) {
             console.log("Error retrieving local HTTPKey.");
@@ -55,7 +55,6 @@ angular.module('addressBook.controllers', [])
         $scope.videoStream = '';
         $scope.onSuccess = function(data) {
             $scope.contactId = data;
-            console.log(data);
         };
         $scope.onError = function(error) {
             console.log(error);
