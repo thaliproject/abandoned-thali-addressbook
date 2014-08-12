@@ -97,7 +97,7 @@ angular.module('addressBook.directives', [])
                     }
                 }
 
-                if (typeof MediaStreamTrack === 'undefined'){
+                if (typeof MediaStreamTrack === 'undefined' || typeof MediaStreamTrack.getSources === 'undefined') {
                   alert('This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
                 } else {
                   MediaStreamTrack.getSources(gotSources);

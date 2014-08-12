@@ -19,7 +19,7 @@
         <script src="bower_components/underscore/underscore.js"></script>
         
         <script src="bower_components/qrcode/lib/qrcode.min.js"></script>
-        <script src="bower_components/angular-qr/angular-qr.min.js"></script>
+        <script src="bower_components/angular-qr/src/angular-qr.js"></script>
         
         <script src="bower_components/angular-pouchdb/angular-pouchdb.js"></script>
         <script src="bower_components/pouchdb/dist/pouchdb-nightly.js"></script>
@@ -59,7 +59,7 @@
         -->
     </head>
 
-    <body ng-controller="MainCtrl">
+    <body ng-controller="MainCtrl" style="height:100%">
         <div ng-view ng-class="slide"></div>
     </body>
 </html>

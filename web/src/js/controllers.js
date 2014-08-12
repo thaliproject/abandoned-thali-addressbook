@@ -39,6 +39,7 @@ angular.module('addressBook.controllers', [])
         $http.get($localKeyURL)
          .success(function(data, status, headers, config) {
             $scope.data = data['localMachineIPHttpKeyURL'];
+            $scope.data = "sixteenletters!!.onion:12345";
             $scope.name = "Me";
          })
          .error(function(data, status, headers, config) {
