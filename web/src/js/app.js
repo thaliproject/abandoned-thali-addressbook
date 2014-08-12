@@ -19,7 +19,7 @@ angular.module('addressBook', [
 	'ngAnimate',
 	'addressBook.controllers',
 	'addressBook.directives',
-	'addressBook.services',
+	'addressBook.services'
 ])
 .config(['$routeProvider', function ($routeProvider) {
 	$routeProvider
@@ -55,6 +55,7 @@ angular.module('addressBook', [
 .constant('$dbname', 'addressbook')
 .constant('$tdhdb', 'http://localhost:58000/addressbook')
 .constant('$localKeyURL', 'http://localhost:58000/_relayutility/localhttpkeys')
+.constant('$domainToHttpKeyURLBase', 'http://localhost:58000/_relayutility/translateonion?')
 .factory('$db', ['$dbname', '$tdhdb', function($dbname, $tdhdb) {
 	var $db = new PouchDB($dbname);
 	$db.replicate.to($tdhdb, {live: true});

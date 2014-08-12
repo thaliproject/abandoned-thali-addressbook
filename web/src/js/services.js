@@ -1,12 +1,37 @@
 angular.module('addressBook.services', [])
-    .factory('Contact', function($db, $tdhdb, $q, $rootScope) {
+    .factory('DomainToHttpKeyURL', ['$domainToHttpKeyURLBase', '$http', function($domainToHttpKeyURLBase, $http) {
+        return function(domainToTranslate, successFunc) {
+            $http.get($domainToHttpKeyURLBase + domainToTranslate)
+                .success(function(data, status, headers, config) {
+                    successFunc(data['httpKeyUrl']);
+                })
+                .error(function(data, status, headers, config) {
+                    console.log("Error translating qrValue to httpkey URL");
+                    console.log(data);
+                    console.log(status);
+                    console.log(headers);
+                    console.log(config);
+                })
+        };
+    }])
+    .factory('Contact', ['$db', '$tdhdb', '$q', '$rootScope', 'DomainToHttpKeyURL',
+        function($db, $tdhdb, $q, $rootScope, domainToHttpKeyURL) {
         return {
-            create: function (contact) {
+            create: function (contactName, qrValue) {
+                var contact = {name: contactName, httpKeyUrl: ""};
                 var deferred = $q.defer();
-                $db.post(contact, function(err, response) {
+                $db.post(contact, function(err, postResponse) {
                     $rootScope.$apply(function() {
-                        if(response.ok) {
-                            deferred.resolve(response);
+                        if(postResponse.ok) {
+                            domainToHttpKeyURL(qrValue, function(retrievedHttpKeyUrl) {
+                                $db.put({ httpKeyUrl: retrievedHttpKeyUrl}, postResponse.id, postResponse.rev,
+                                    function(err, putResponse) {
+                                        if (err) {
+                                            console.log("Attempt to update contact with httpKey value failed: " + err);
+                                        }
+                                    })
+                            });
+                            deferred.resolve(postResponse);
                         } else {
                             console.log("Failed to save new contact: " + err);
                             deferred.reject(err);
@@ -64,5 +89,5 @@ angular.module('addressBook.services', [])
                 return deferred.promise;
             }
         }
-    })
+    }])
 ;

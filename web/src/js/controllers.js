@@ -38,7 +38,7 @@ angular.module('addressBook.controllers', [])
         console.log("In showme!");
         $http.get($localKeyURL)
          .success(function(data, status, headers, config) {
-            $scope.data = data['localMachineIPHttpKeyURL'];
+            $scope.data = data['localMachineIPHttpKeyURL'].split("/")[2];
             $scope.name = "Me";
          })
          .error(function(data, status, headers, config) {
@@ -50,11 +50,11 @@ angular.module('addressBook.controllers', [])
         console.log("Running puton.");
     })
     .controller('ContactNewCtrl', ['$scope', 'Contact', '$location', function($scope, contact, $location) {
-        $scope.contactId = '';
+        $scope.qrValue = '';
         $scope.contactName = '';
         $scope.videoStream = '';
         $scope.onSuccess = function(data) {
-            $scope.contactId = data;
+            $scope.qrValue = data;
         };
         $scope.onError = function(error) {
             console.log(error);
@@ -62,8 +62,8 @@ angular.module('addressBook.controllers', [])
         $scope.onVideoError = function(error) {
             console.log(error);
         };
-        $scope.save = function(contactId, contactName) {
-            contact.create({name: contactName, uniqueId: contactId}).then(function() {
+        $scope.save = function(qrValue, contactName) {
+            contact.create(contactName, qrValue).then(function() {
                 $location.path('/contacts');
             }, function(reason) {
                 console.log("Failed to save contact: " + reason);

@@ -9,7 +9,7 @@
         <h1 class="topcoat-navigation-bar__title">New Contact</h1>
     </div>
     <div class="topcoat-navigation-bar__item right quarter">
-        <button class="topcoat-icon-button--large--quiet" ng-click="save(contactId, contactName, videoStream)">
+        <button class="topcoat-icon-button--large--quiet" ng-click="save(qrValue, contactName, videoStream)">
             <span class="topcoat-icon icomatic">save</span>
         </button>
     </div>
@@ -22,7 +22,7 @@
                 <qr-scanner ng-success="onSuccess(data)" ng-error="onError(error)"></qr-scanner>
             </section>
             <section style="margin-bottom: 5px">
-                <input class="topcoat-text-input--large" type='text' ng-model="contactId" placeholder="Unique ID from QR Code" style="width:80%"/>
+                <input class="topcoat-text-input--large" type='text' ng-model="qrValue" placeholder="Unique ID from QR Code" style="width:80%"/>
             </section>
             <section>
                 <input class="topcoat-text-input--large" type='text' ng-model="contactName" placeholder="Please enter a contact name." style="width:80%"/>
