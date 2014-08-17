@@ -99,6 +99,7 @@ public class ProxyDesktop  {
             throw new RuntimeException("Either the web directory wasn't installed or we have the wrong location or you are debugging AND DIDN'T READ THE README.md!!!!!!!! - " +
                 webDirectory.getAbsolutePath());
         }
+
         // Useful for debugging
         // webPath = new File(new File(System.getProperty("user.dir")).getParent(), "web").toPath();
 
