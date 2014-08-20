@@ -53,9 +53,10 @@ angular.module('addressBook', [
 		});
 }])
 .constant('$dbname', 'addressbook')
-.constant('$tdhdb', 'http://localhost:58000/addressbook')
-.constant('$localKeyURL', 'http://localhost:58000/_relayutility/localhttpkeys')
-.constant('$domainToHttpKeyURLBase', 'http://localhost:58000/_relayutility/translateonion?')
+.constant('$relayAddress', TDHReplication.relayAddress)
+.constant('$tdhdb', TDHReplication.relayAddress+'/addressbook')
+.constant('$localKeyURL', TDHReplication.relayAddress+'/_relayutility/localhttpkeys')
+.constant('$domainToHttpKeyURLBase', TDHReplication.relayAddress+'/_relayutility/translateonion?')
 .factory('$db', ['$dbname', '$tdhdb', function($dbname, $tdhdb) {
 	var $db = new PouchDB($dbname);
 	$db.replicate.to($tdhdb, {live: true});

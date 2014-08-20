@@ -4,6 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
+        <!-- Has to go first because the Angular code has a dependency on it, this ordering will go away
+        when https://github.com/thaliproject/ThaliHTML5ApplicationFramework/issues/4 is fixed. -->
+        <script src="js/tdh_replication.js"></script>
+
         <!-- Styles -->
         <link href="bower_components/topcoat/css/topcoat-mobile-light.min.css" rel="stylesheet">
         <link href="bower_components/topcoat-icons/font/icomatic.css" rel="stylesheet">

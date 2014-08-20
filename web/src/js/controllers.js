@@ -29,7 +29,7 @@ angular.module('addressBook.controllers', [])
     .controller('ContactDetailCtrl', ['$scope', '$routeParams', 'Contact', function ($scope, $routeParams, contact) {
         contact.retrieve($routeParams.contactId).then(function(contact) {
             $scope.name = contact.name;
-            $scope.data = contact.uniqueId;
+            $scope.data = contact.httpKeyUrl.split("/")[2];
         }, function(reason) {
             console.log("Failed: " + reason);
         });
@@ -38,7 +38,7 @@ angular.module('addressBook.controllers', [])
         console.log("In showme!");
         $http.get($localKeyURL)
          .success(function(data, status, headers, config) {
-            $scope.data = data['localMachineIPHttpKeyURL'].split("/")[2];
+            $scope.data = data['onionHttpKeyURL'].split("/")[2];
             $scope.name = "Me";
          })
          .error(function(data, status, headers, config) {

@@ -1,21 +1,78 @@
 angular.module('addressBook.services', [])
-    .factory('DomainToHttpKeyURL', ['$domainToHttpKeyURLBase', '$http', function($domainToHttpKeyURLBase, $http) {
-        return function(domainToTranslate, successFunc) {
-            $http.get($domainToHttpKeyURLBase + domainToTranslate)
-                .success(function(data, status, headers, config) {
-                    successFunc(data['httpKeyUrl']);
-                })
-                .error(function(data, status, headers, config) {
-                    console.log("Error translating qrValue to httpkey URL");
-                    console.log(data);
-                    console.log(status);
-                    console.log(headers);
-                    console.log(config);
-                })
-        };
+    .factory('DomainToHttpKeyURL', ['$domainToHttpKeyURLBase', '$http', '$q',
+        function($domainToHttpKeyURLBase, $http, $q) {
+            function translate(domainToTranslate) {
+                return $http.get($domainToHttpKeyURLBase + domainToTranslate)
+                    .then(function(response) {
+                        return response.data['httpKeyUrl'];
+                    })
+                    .catch(function(errResponse) {
+                        var errorMessage = "Error translating qrValue to httpkey URL";
+                        console.log(errorMessage);
+                        console.log(errResponse.data);
+                        console.log(errResponse.status);
+                        console.log(errResponse.headers);
+                        console.log(errResponse.config);
+                        return translate(domainToTranslate);
+                    });
+            }
+
+            return function(domainToTranslate) {
+                return translate(domainToTranslate);
+            };
     }])
-    .factory('Contact', ['$db', '$tdhdb', '$q', '$rootScope', 'DomainToHttpKeyURL',
-        function($db, $tdhdb, $q, $rootScope, domainToHttpKeyURL) {
+    .factory('PermissionDatabase', ['$relayAddress', '$q', 'pouchdb', function($relayAddress, $q, pouchdb) {
+        /*
+         The document in keybase has four fields
+         id - Exactly the value out of the httpkeyurl
+         keyType - "RSAKeyType"
+         modulus -
+         exponent -
+         */
+        var rsakeytype = "rsapublickey";
+        var keyDatabaseName = "thaliprincipaldatabase";
+        var keyDatabasePouch = pouchdb.create($relayAddress + "/" + keyDatabaseName);
+
+        return {
+            create: function(httpKey) {
+                var rsaPublicKeyString = httpKey.split("/")[3];
+                // We add a + 1 on rsakeytype.length because we want to eat the ":" separator
+                var rsaPublicKeySplit = rsaPublicKeyString.substr(rsakeytype.length + 1).split(".");
+                var publicKeyDoc = {};
+                publicKeyDoc.keyType = rsakeytype;
+                publicKeyDoc.exponent = rsaPublicKeySplit[0];
+                publicKeyDoc.modulus = rsaPublicKeySplit[1];
+                // Yes, we use the same string as the record ID
+                var recordId = rsaPublicKeyString;
+                // We don't need a 'then' since if the key is present then we have succeeded!
+                return keyDatabasePouch.get(recordId).catch(
+                    function(err) {
+                        // We don't need a 'then' since if the key was successfully put we are done
+                        return keyDatabasePouch.put(publicKeyDoc, recordId).catch(function(err) {
+                                // It's quite likely nobody is listening so we should log ourselves
+                                console.log("Could not put key into database! - " + err);
+                                return $q.reject(err);
+                            }
+                        );
+                    });
+            },
+            delete: function(httpKey) {
+                var recordId = httpKey.split("/")[3];
+                return keyDatabasePouch.get(recordId).then(
+                    function(doc) {
+                        return keyDatabasePouch.remove(doc)
+                    },
+                    function(err) {
+                        // If the key isn't in the permission database then it has, effectively, already been
+                        // deleted and we can just return.
+                        return;
+                    }
+                );
+            }
+        }
+    }])
+    .factory('Contact', ['$db', '$tdhdb', '$q', '$rootScope', 'DomainToHttpKeyURL', 'PermissionDatabase',
+        function($db, $tdhdb, $q, $rootScope, domainToHttpKeyURL, permissionDatabase) {
         return {
             create: function (contactName, qrValue) {
                 var contact = {name: contactName, httpKeyUrl: ""};
@@ -23,13 +80,18 @@ angular.module('addressBook.services', [])
                 $db.post(contact, function(err, postResponse) {
                     $rootScope.$apply(function() {
                         if(postResponse.ok) {
-                            domainToHttpKeyURL(qrValue, function(retrievedHttpKeyUrl) {
-                                $db.put({ httpKeyUrl: retrievedHttpKeyUrl}, postResponse.id, postResponse.rev,
+                            domainToHttpKeyURL(qrValue).then(function(retrievedHttpKeyUrl) {
+                                contact.httpKeyUrl = retrievedHttpKeyUrl;
+                                $db.put(contact, postResponse.id, postResponse.rev,
                                     function(err, putResponse) {
                                         if (err) {
                                             console.log("Attempt to update contact with httpKey value failed: " + err);
+                                        } else {
+                                            permissionDatabase.create(retrievedHttpKeyUrl);
                                         }
                                     })
+                            }).catch(function(err) {
+                              console.log("Attempt to translate domain to httpkey URL failed - " + err);
                             });
                             deferred.resolve(postResponse);
                         } else {
@@ -58,7 +120,8 @@ angular.module('addressBook.services', [])
                     });
                 });
                 return deferred.promise;
-            }, 
+            },
+            // This function has not had the logic added to it to change keys in the permission database
             update: function (contact) {
                 var deferred = $q.defer();
                 $db.post(contact, function(err, response) {
@@ -79,10 +142,22 @@ angular.module('addressBook.services', [])
                 $db.remove(contact, function(err, response) {
                     $rootScope.$apply(function() {
                         if (response) {
-                            deferred.resolve(response);
+                            if (contact.httpKeyUrl && contact.httpKeyUrl.length > 0) {
+                                permissionDatabase.delete(contact.httpKeyUrl)
+                                    .then(function(response) {
+                                        return deferred.resolve(response);
+                                    })
+                                    .catch(function(errResponse) {
+                                        return deferred.reject(errResponse);
+                                    });
+                            } else {
+                                // This is a race condition where someone deleted a contact before we had
+                                // turned its onion address into a httpkeyURL.
+                                return deferred.resolve();
+                            }
                         } else {
                             console.log("Failed to delete contact: " + err);
-                            deferred.reject(err);
+                            return deferred.reject(err);
                         }
                     });
                 });

@@ -27,6 +27,7 @@ angular.module('addressBook.directives', [])
                 var video = document.createElement('video');
                 video.setAttribute('width', width);
                 video.setAttribute('height', height);
+                video.setAttribute('autoplay', '');
                 var canvas = document.createElement('canvas');
                 canvas.setAttribute('id', 'qr-canvas');
                 canvas.setAttribute('width', width);
@@ -54,18 +55,18 @@ angular.module('addressBook.directives', [])
                         }
                     }
                     $timeout(scan, 500);
-                }
+                };
 
                 var successCallback = function(stream) {
                     video.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
                     videoStream = stream;
                     video.play();
                     $timeout(scan, 1000);
-                }
+                };
                 
                 var errorCallback = function(e) {
                     scope.ngVideoError({error: e});
-                }
+                };
 
                 function gotSources(sourceInfos) {
                     var constraints = {
@@ -90,6 +91,11 @@ angular.module('addressBook.directives', [])
                         }
                     }
                     // Call the getUserMedia method with our callback functions
+                    navigator.getUserMedia = navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia ||
+                        navigator.msGetUserMedia;
+
                     if (navigator.getUserMedia) {
                         navigator.getUserMedia(constraints, successCallback, errorCallback);
                     } else {
