@@ -31,7 +31,12 @@ angular.module('addressBook.services', [])
          */
         var rsakeytype = "rsapublickey";
         var keyDatabaseName = "thaliprincipaldatabase";
-        var keyDatabasePouch = pouchdb.create($relayAddress + "/" + keyDatabaseName);
+        function keyDatabasePouch() {
+            return TDHReplication.waitForRelayToStart()
+                .then(function() {
+                    return pouchdb.create($relayAddress + "/" + keyDatabaseName);
+                })
+        }
 
         return {
             create: function(httpKey) {
@@ -45,29 +50,46 @@ angular.module('addressBook.services', [])
                 // Yes, we use the same string as the record ID
                 var recordId = rsaPublicKeyString;
                 // We don't need a 'then' since if the key is present then we have succeeded!
-                return keyDatabasePouch.get(recordId).catch(
-                    function(err) {
-                        // We don't need a 'then' since if the key was successfully put we are done
-                        return keyDatabasePouch.put(publicKeyDoc, recordId).catch(function(err) {
-                                // It's quite likely nobody is listening so we should log ourselves
-                                console.log("Could not put key into database! - " + err);
-                                return $q.reject(err);
-                            }
-                        );
+                return keyDatabasePouch()
+                    .then(function(pouch) {
+                        return pouch.get(recordId)
+                            .catch(function (err) {
+                                // We don't need a 'then' since if the key was successfully put we are done
+                                return keyDatabasePouch()
+                                    .then(function(pouch) {
+                                        return pouch.put(publicKeyDoc, recordId).catch(function (err) {
+                                                // It's quite likely nobody is listening so we should log ourselves
+                                                console.log("Could not put key into database! - " + err);
+                                                return $q.reject(err);
+                                            }
+                                        )
+                                    });
+                            })
                     });
             },
             delete: function(httpKey) {
                 var recordId = httpKey.split("/")[3];
-                return keyDatabasePouch.get(recordId).then(
-                    function(doc) {
-                        return keyDatabasePouch.remove(doc)
-                    },
-                    function(err) {
-                        // If the key isn't in the permission database then it has, effectively, already been
-                        // deleted and we can just return.
-                        return;
-                    }
-                );
+                return keyDatabasePouch()
+                    .then(function(pouch) {
+                        return pouch.get(recordId)
+                            .then(
+                            function (doc) {
+                                return keyDatabasePouch()
+                                    .then(function(pouch) {
+                                        return pouch.remove(doc)
+                                            .then(function() { console.log("permission deleted!"); })
+                                            .catch(function(err) { console.log("permission wasn't deleted because " +
+                                                err)});
+                                    });
+                            },
+                            function (err) {
+                                // If the key isn't in the permission database then it has, effectively, already been
+                                // deleted and we can just return.
+                                console.log("permission wasn't in the DB so we didn't need to delete it, all good.");
+                                return;
+                            }
+                        );
+                    });
             }
         }
     }])
@@ -80,19 +102,22 @@ angular.module('addressBook.services', [])
                 $db.post(contact, function(err, postResponse) {
                     $rootScope.$apply(function() {
                         if(postResponse.ok) {
-                            domainToHttpKeyURL(qrValue).then(function(retrievedHttpKeyUrl) {
-                                contact.httpKeyUrl = retrievedHttpKeyUrl;
-                                $db.put(contact, postResponse.id, postResponse.rev,
-                                    function(err, putResponse) {
-                                        if (err) {
-                                            console.log("Attempt to update contact with httpKey value failed: " + err);
-                                        } else {
-                                            permissionDatabase.create(retrievedHttpKeyUrl);
-                                        }
-                                    })
-                            }).catch(function(err) {
-                              console.log("Attempt to translate domain to httpkey URL failed - " + err);
-                            });
+                            domainToHttpKeyURL(qrValue)
+                                .then(function(retrievedHttpKeyUrl) {
+                                    contact.httpKeyUrl = retrievedHttpKeyUrl;
+                                    $db.put(contact, postResponse.id, postResponse.rev,
+                                        function(err, putResponse) {
+                                            if (err) {
+                                                console.log("Attempt to update contact with httpKey value failed: " + err);
+                                            } else {
+                                                permissionDatabase.create(retrievedHttpKeyUrl)
+                                                    .then(function() { console.log("Full provisioned " + retrievedHttpKeyUrl)});
+                                            }
+                                        })
+                                })
+                                .catch(function(err) {
+                                    console.log("Attempt to translate domain to httpkey URL failed - " + err);
+                                });
                             deferred.resolve(postResponse);
                         } else {
                             console.log("Failed to save new contact: " + err);
@@ -116,7 +141,7 @@ angular.module('addressBook.services', [])
                         } else {
                             console.log("Error getting all contacts: " + err);
                             deferred.reject(err);
-                        }                   
+                        }
                     });
                 });
                 return deferred.promise;
