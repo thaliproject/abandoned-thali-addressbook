@@ -1,6 +1,6 @@
 {
-  "name": "thali_client",
-  "version": "0.0.0.1",
+  "name": "Thali Address Book",
+  "version": "0.0.0",
   "app": {
     "launch":{
       "local_path": "index.html"
