@@ -1,3 +1,5 @@
+# THIS IS AN ABANDONED PROJECT, WE JUST KEEP IT AROUND FOR HISTORICAL REASONS. PLEASE IGNORE.
+
 Thali HTML5 Application Framework (THAF)
 ========================================
 
